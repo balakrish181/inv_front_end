@@ -56,37 +56,99 @@ def dashboard(filename):
 @app.route('/get_data/<path:filename>')
 def get_data(filename):
     try:
+        # Print debug info
+        print(f"Loading CSV: {filename}")
+        
+        # Ensure file exists
+        if not os.path.exists(filename):
+            print(f"File does not exist: {filename}")
+            return jsonify({'error': f'File not found: {filename}'})
+            
+        # Read CSV file
         df = pd.read_csv(filename)
+        print(f"CSV loaded successfully. Columns: {df.columns.tolist()}")
+        print(f"Data types: {df.dtypes}")
+        print(f"First few rows: \n{df.head()}")
+        
+        # Check if required columns exist
+        required_columns = ['spend_date', 'spend_description', 'amount', 'category']
+        for col in required_columns:
+            if col not in df.columns:
+                print(f"Missing column: {col}")
+                return jsonify({'error': f'Missing column: {col}. Required columns: {required_columns}'})
         
         # Prepare data for charts
-        category_data = df.groupby('category')['amount'].sum().reset_index()
-        category_labels = category_data['category'].tolist()
-        category_values = category_data['amount'].tolist()
+        # Handle category data
+        try:
+            category_data = df.groupby('category')['amount'].sum().reset_index()
+            category_labels = category_data['category'].tolist()
+            category_values = category_data['amount'].tolist()
+            print(f"Categories found: {category_labels}")
+        except Exception as e:
+            print(f"Error in category processing: {str(e)}")
+            category_labels = ['Other']
+            category_values = [df['amount'].sum() if 'amount' in df else 0]
         
-        # Time series data (assuming spend_date is in proper format)
-        df['spend_date'] = pd.to_datetime(df['spend_date'])
-        date_data = df.groupby('spend_date')['amount'].sum().reset_index()
-        date_labels = date_data['spend_date'].dt.strftime('%Y-%m-%d').tolist()
-        date_values = date_data['amount'].tolist()
+        # Handle date data with error checking
+        try:
+            # Convert to datetime safely
+            df['spend_date'] = pd.to_datetime(df['spend_date'], errors='coerce')
+            
+            # Drop any rows with invalid dates
+            df = df.dropna(subset=['spend_date'])
+            
+            # Group by date
+            if not df.empty:
+                date_data = df.groupby('spend_date')['amount'].sum().reset_index()
+                date_labels = date_data['spend_date'].dt.strftime('%Y-%m-%d').tolist()
+                date_values = date_data['amount'].tolist()
+            else:
+                date_labels = []
+                date_values = []
+            print(f"Dates found: {date_labels}")
+        except Exception as e:
+            print(f"Error in date processing: {str(e)}")
+            date_labels = []
+            date_values = []
         
-        # Top merchants data
-        merchant_data = df.groupby('spend_description')['amount'].sum().reset_index().sort_values('amount', ascending=False).head(10)
-        merchant_labels = merchant_data['spend_description'].tolist()
-        merchant_values = merchant_data['amount'].tolist()
+        # Handle merchant data
+        try:
+            merchant_data = df.groupby('spend_description')['amount'].sum().reset_index().sort_values('amount', ascending=False).head(10)
+            merchant_labels = merchant_data['spend_description'].tolist()
+            merchant_values = merchant_data['amount'].tolist()
+            print(f"Top merchants found: {merchant_labels[:3]}")
+        except Exception as e:
+            print(f"Error in merchant processing: {str(e)}")
+            merchant_labels = ['No data']
+            merchant_values = [0]
         
-        # Total amount
-        total_spent = df['amount'].sum()
+        # Calculate total amount
+        try:
+            total_spent = df['amount'].sum()
+            print(f"Total spent: {total_spent}")
+        except Exception as e:
+            print(f"Error calculating total: {str(e)}")
+            total_spent = 0
         
         # Format transaction data for the table
         transactions = []
-        for _, row in df.iterrows():
-            transactions.append({
-                'spend_date': row['spend_date'].strftime('%Y-%m-%d'),
-                'spend_description': row['spend_description'],
-                'amount': float(row['amount']),
-                'category': row['category']
-            })
+        try:
+            for _, row in df.iterrows():
+                if pd.notna(row.get('spend_date')):
+                    date_str = row['spend_date'].strftime('%Y-%m-%d')
+                else:
+                    date_str = 'Unknown Date'
+                    
+                transactions.append({
+                    'spend_date': date_str,
+                    'spend_description': row['spend_description'],
+                    'amount': float(row['amount']),
+                    'category': row['category']
+                })
+        except Exception as e:
+            print(f"Error formatting transactions: {str(e)}")
         
+        # Return the prepared data
         return jsonify({
             'category': {
                 'labels': category_labels,
@@ -104,6 +166,7 @@ def get_data(filename):
             'transactions': transactions
         })
     except Exception as e:
+        print(f"Global error in get_data: {str(e)}")
         return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
