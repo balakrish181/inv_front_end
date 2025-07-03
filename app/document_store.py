@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime, date
 import os
 import json
-from fields_to_extract import CreditCardStatement
+from .fields_to_extract import CreditCardStatement
 from pymongo import MongoClient
 from bson import ObjectId, Binary
 from decimal import Decimal

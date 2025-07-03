@@ -3,11 +3,11 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from werkzeug.utils import secure_filename
 import pandas as pd
 import json
-from main import main as process_pdf
+from .main import main as process_pdf
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = 'data/uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 
 if not os.path.exists(UPLOAD_FOLDER):

@@ -1,13 +1,13 @@
-from text_extraction import extract_text_from_pdf
+from .text_extraction import extract_text_from_pdf
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel, Field
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from typing import Iterable
 
-from fields_to_extract import CreditCardStatement
-from client_request import parse_lead_from_message
-from document_store import store_document, get_customer_spending_summary, save_document_pdf
+from .fields_to_extract import CreditCardStatement
+from .client_request import parse_lead_from_message
+from .document_store import store_document, get_customer_spending_summary, save_document_pdf
 import csv
 import sys
 import os
