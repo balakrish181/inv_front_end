@@ -37,7 +37,7 @@ def extract_text_from_pdf(input_doc_path):
 
 def main():
     # Path to your input document (PDF)
-    input_doc_path = Path("Amex.pdf")
+    input_doc_path = Path(r"pdfs\amex.pdf")
 
     # Start the conversion process with Docling
     start_time = time.time()

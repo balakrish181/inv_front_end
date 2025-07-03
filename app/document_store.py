@@ -11,11 +11,11 @@ from decimal import Decimal
 import base64
 
 # MongoDB connection string - you'll need to set this in your environment
-MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/document_classifier')
+MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://localhost:27017/')
 
-# Create MongoDB client
+# Create MongoDB client and get database
 client = MongoClient(MONGODB_URI)
-db = client.get_database()
+db = client['document_classifier']  # Explicitly specify the database name
 documents_collection = db.documents
 
 class Document:

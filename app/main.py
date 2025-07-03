@@ -54,6 +54,6 @@ def main(input_doc_path):
 
 
 if __name__ == "__main__":
-    input_doc_path = "BankOfAmerica.pdf"
+    input_doc_path = "pdfs/Amex.pdf"
     main(input_doc_path)
     #print(text)
