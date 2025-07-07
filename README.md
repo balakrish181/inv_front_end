@@ -67,8 +67,8 @@ run.py
 1.  **Clone the repository:**
 
     ```bash
-    git clone <repository-url>
-    cd inv_extractor_with_frontend
+    clone and cd into this repo
+  
     ```
 
 2.  **Create and activate a virtual environment (recommended):**
